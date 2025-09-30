@@ -15,6 +15,8 @@ import (
 func main() {
 	addCmd := flag.NewFlagSet("add", flag.ExitOnError)
 	listCmd := flag.NewFlagSet("list", flag.ExitOnError)
+	listDoneLimit := listCmd.Int("done-limit", 3, "number of done items to show")
+	listLong := listCmd.Bool("long", false, "show timestamps for done items")
 	doneCmd := flag.NewFlagSet("done", flag.ExitOnError)
 	initCmd := flag.NewFlagSet("init", flag.ExitOnError)
 
@@ -77,7 +79,7 @@ func main() {
 			os.Exit(1)
 		}
 		items := s.All()
-		ui.RenderList(items)
+		ui.RenderList(items, *listDoneLimit, *listLong)
 
 	case "done":
 		doneCmd.Parse(os.Args[2:])
