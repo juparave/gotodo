@@ -1,0 +1,36 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.out
+
+# Test binary, build with `go test -c`
+*.test
+
+# Output of the go coverage tool, specifically when use with VS Code coverage
+*.out
+
+# Go workspace
+go.work
+
+# Project local .gotodo.json config file
+.gotodo.json
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Compiled files
+*.a
+
+# Coverage
+coverage.out
