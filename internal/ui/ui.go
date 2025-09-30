@@ -61,3 +61,29 @@ func RenderList(items []*model.Todo, doneLimit int, long bool) {
 		}
 	}
 }
+
+// RenderHelp prints a short, styled usage hint when the user runs the CLI
+// without arguments.
+func RenderHelp() {
+	// small helper styles
+	desc := lipgloss.NewStyle().Foreground(lipgloss.Color("7"))
+	cmd := lipgloss.NewStyle().Foreground(lipgloss.Color("12")).Bold(true)
+	word := lipgloss.NewStyle().Foreground(lipgloss.Color("10"))
+
+	fmt.Println(titleStyle.Render("gotodo — simple todo CLI"))
+	fmt.Println(desc.Render("A tiny filesystem-aware todo manager that stores lists as JSON files."))
+	fmt.Println()
+	fmt.Println(cmd.Render("Usage:") + " gotodo <command> [args]")
+	fmt.Println()
+	fmt.Println(cmd.Render("Commands:"))
+	fmt.Println(word.Render("  init") + "    Initialize a .gotodo.json in the current directory")
+	fmt.Println(word.Render("  add <task>") + "  Add a todo (multi-word allowed)")
+	fmt.Println(word.Render("  list") + "   Show todos (flags: --done-limit, --long)")
+	fmt.Println(word.Render("  done <id|n>") + "  Mark a todo done (n = open index)")
+	fmt.Println()
+	fmt.Println(cmd.Render("Examples:"))
+	fmt.Println("  " + todoStyle.Render("gotodo add \"Write README\"") + "  — add a todo")
+	fmt.Println("  " + todoStyle.Render("gotodo list --long") + "  — show todos with timestamps")
+	fmt.Println()
+	fmt.Println(desc.Render("Note: gotodo uses a .gotodo.json file in the current directory (or the nearest ancestor) so lists are project-specific."))
+}

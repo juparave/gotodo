@@ -21,8 +21,8 @@ func main() {
 	initCmd := flag.NewFlagSet("init", flag.ExitOnError)
 
 	if len(os.Args) < 2 {
-		fmt.Println("gotodo <command> [args]\nCommands: init, add, list")
-		os.Exit(2)
+		ui.RenderHelp()
+		os.Exit(0)
 	}
 
 	switch os.Args[1] {
