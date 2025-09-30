@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 
 	"github.com/juparave/gotodo/internal/model"
 	"github.com/juparave/gotodo/internal/store"
@@ -14,6 +15,7 @@ import (
 func main() {
 	addCmd := flag.NewFlagSet("add", flag.ExitOnError)
 	listCmd := flag.NewFlagSet("list", flag.ExitOnError)
+	doneCmd := flag.NewFlagSet("done", flag.ExitOnError)
 	initCmd := flag.NewFlagSet("init", flag.ExitOnError)
 
 	if len(os.Args) < 2 {
@@ -76,6 +78,47 @@ func main() {
 		}
 		items := s.All()
 		ui.RenderList(items)
+
+	case "done":
+		doneCmd.Parse(os.Args[2:])
+		if doneCmd.NArg() < 1 {
+			fmt.Fprintln(os.Stderr, "usage: gotodo done <id|n>")
+			os.Exit(2)
+		}
+		target := doneCmd.Arg(0)
+		cwd, _ := os.Getwd()
+		path := filepath.Join(cwd, ".gotodo.json")
+		s := store.NewJSONFileStore(path)
+		if err := s.Load(); err != nil {
+			fmt.Fprintln(os.Stderr, "no todo file found at", path)
+			os.Exit(1)
+		}
+		// try parse as index relative to the open list
+		if idx, err := strconv.Atoi(target); err == nil {
+			// build open list mapping to global indexes
+			var openIdxes []int
+			for i, t := range s.All() {
+				if !t.Done {
+					openIdxes = append(openIdxes, i)
+				}
+			}
+			if idx < 1 || idx > len(openIdxes) {
+				fmt.Fprintln(os.Stderr, "index out of range for open todos")
+				os.Exit(2)
+			}
+			global := openIdxes[idx-1]
+			if err := s.MarkDoneByIndex(global); err != nil {
+				fmt.Fprintln(os.Stderr, "mark done error:", err)
+				os.Exit(1)
+			}
+			fmt.Println("Marked done (open index):", idx)
+		} else {
+			if err := s.MarkDoneByID(target); err != nil {
+				fmt.Fprintln(os.Stderr, "mark done error:", err)
+				os.Exit(1)
+			}
+			fmt.Println("Marked done (id):", target)
+		}
 
 	default:
 		fmt.Fprintln(os.Stderr, "unknown command", os.Args[1])
