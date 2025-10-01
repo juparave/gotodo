@@ -80,6 +80,7 @@ func RenderHelp() {
 	fmt.Println(word.Render("  add <task>") + "  Add a todo (multi-word allowed)")
 	fmt.Println(word.Render("  list") + "   Show todos (flags: --done-limit, --long)")
 	fmt.Println(word.Render("  done <id|n>") + "  Mark a todo done (n = open index)")
+	fmt.Println(word.Render("  rm <id|n>") + "    Remove a todo (n = open index). Use --force to skip confirmation")
 	fmt.Println()
 	fmt.Println(cmd.Render("Examples:"))
 	fmt.Println("  " + todoStyle.Render("gotodo add \"Write README\"") + "  — add a todo")
