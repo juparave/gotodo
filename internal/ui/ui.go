@@ -3,6 +3,7 @@ package ui
 import (
 	"fmt"
 	"sort"
+	"time"
 
 	"github.com/charmbracelet/lipgloss"
 	"github.com/juparave/gotodo/internal/model"
@@ -13,6 +14,30 @@ var (
 	doneStyle  = lipgloss.NewStyle().Foreground(lipgloss.Color("240"))
 	todoStyle  = lipgloss.NewStyle().Foreground(lipgloss.Color("10"))
 )
+
+// formatDuration formats a duration as "Xd Yh ago" for human readability
+func formatDuration(d time.Duration) string {
+	days := int(d.Hours() / 24)
+	hours := int(d.Hours()) % 24
+	minutes := int(d.Minutes()) % 60
+
+	if days > 0 {
+		if hours > 0 {
+			return fmt.Sprintf("%dd %dh ago", days, hours)
+		}
+		return fmt.Sprintf("%dd ago", days)
+	}
+	if hours > 0 {
+		if minutes > 0 {
+			return fmt.Sprintf("%dh %dm ago", hours, minutes)
+		}
+		return fmt.Sprintf("%dh ago", hours)
+	}
+	if minutes > 0 {
+		return fmt.Sprintf("%dm ago", minutes)
+	}
+	return "just now"
+}
 
 func RenderList(items []*model.Todo, doneLimit int, long bool) {
 	fmt.Println(titleStyle.Render("Todos"))
@@ -33,7 +58,11 @@ func RenderList(items []*model.Todo, doneLimit int, long bool) {
 		fmt.Println("  (no open todos)")
 	}
 	for i, t := range open {
-		fmt.Printf(" %2d. %s\n", i+1, todoStyle.Render(t.Text))
+		if long {
+			fmt.Printf(" %2d. %s  (%s)\n", i+1, todoStyle.Render(t.Text), formatDuration(time.Since(t.CreatedAt)))
+		} else {
+			fmt.Printf(" %2d. %s\n", i+1, todoStyle.Render(t.Text))
+		}
 	}
 
 	fmt.Println("\nDone:")
