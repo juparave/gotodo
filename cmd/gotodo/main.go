@@ -18,7 +18,9 @@ func main() {
 	listCmd := flag.NewFlagSet("list", flag.ExitOnError)
 	listDoneLimit := listCmd.Int("done-limit", 3, "number of done items to show")
 	listLong := listCmd.Bool("long", false, "show timestamps for done items")
+	listFile := listCmd.String("file", "", "path to .gotodo.json (overrides discovery)")
 	doneCmd := flag.NewFlagSet("done", flag.ExitOnError)
+	doneFile := doneCmd.String("file", "", "path to .gotodo.json (overrides discovery)")
 	initCmd := flag.NewFlagSet("init", flag.ExitOnError)
 	rmCmd := flag.NewFlagSet("rm", flag.ExitOnError)
 	rmForce := rmCmd.Bool("force", false, "remove without confirmation")
@@ -34,23 +36,29 @@ func main() {
 	case "init":
 		initCmd.Parse(os.Args[2:])
 		cwd, _ := os.Getwd()
-		var path string
-		if *rmFile != "" {
-			path = *rmFile
-		} else {
-			// try discovery
-			if p, err := discover.FindNearestTodoFile(cwd); err == nil && p != "" {
-				path = p
-			} else {
-				path = filepath.Join(cwd, ".gotodo.json")
+		currentPath := filepath.Join(cwd, ".gotodo.json")
+		if _, err := os.Stat(currentPath); err == nil {
+			fmt.Fprintln(os.Stderr, "todo file already exists at", currentPath)
+			os.Exit(1)
+		}
+		// discover parent
+		parentPath, _ := discover.FindNearestTodoFile(filepath.Dir(cwd))
+		if parentPath != "" {
+			fmt.Printf("Found todo list in %s. Use that list? (y/N): ", filepath.Dir(parentPath))
+			var ans string
+			fmt.Scanln(&ans)
+			if ans == "y" || ans == "Y" {
+				fmt.Println("Using existing list at", parentPath)
+				os.Exit(0)
 			}
 		}
-		s := store.NewJSONFileStore(path)
+		// create new in current
+		s := store.NewJSONFileStore(currentPath)
 		if err := s.Init(); err != nil {
 			fmt.Fprintln(os.Stderr, "init error:", err)
 			os.Exit(1)
 		}
-		fmt.Println("Initialized:", path)
+		fmt.Println("Initialized:", currentPath)
 
 	case "add":
 		addCmd.Parse(os.Args[2:])
@@ -67,7 +75,21 @@ func main() {
 			text += addCmd.Arg(i)
 		}
 		cwd, _ := os.Getwd()
-		path := filepath.Join(cwd, ".gotodo.json")
+		var path string
+		currentPath := filepath.Join(cwd, ".gotodo.json")
+		parentPath, _ := discover.FindNearestTodoFile(filepath.Dir(cwd))
+		if parentPath != "" {
+			fmt.Printf("Found todo list in %s. Use that list? (y/N): ", filepath.Dir(parentPath))
+			var ans string
+			fmt.Scanln(&ans)
+			if ans == "y" || ans == "Y" {
+				path = parentPath
+			} else {
+				path = currentPath
+			}
+		} else {
+			path = currentPath
+		}
 		s := store.NewJSONFileStore(path)
 		if err := s.Load(); err != nil {
 			// try init
@@ -87,7 +109,17 @@ func main() {
 	case "list":
 		listCmd.Parse(os.Args[2:])
 		cwd, _ := os.Getwd()
-		path := filepath.Join(cwd, ".gotodo.json")
+		var path string
+		if *listFile != "" {
+			path = *listFile
+		} else {
+			// try discovery
+			if p, err := discover.FindNearestTodoFile(cwd); err == nil && p != "" {
+				path = p
+			} else {
+				path = filepath.Join(cwd, ".gotodo.json")
+			}
+		}
 		s := store.NewJSONFileStore(path)
 		if err := s.Load(); err != nil {
 			fmt.Fprintln(os.Stderr, "no todo file found at", path)
@@ -104,7 +136,17 @@ func main() {
 		}
 		target := doneCmd.Arg(0)
 		cwd, _ := os.Getwd()
-		path := filepath.Join(cwd, ".gotodo.json")
+		var path string
+		if *doneFile != "" {
+			path = *doneFile
+		} else {
+			// try discovery
+			if p, err := discover.FindNearestTodoFile(cwd); err == nil && p != "" {
+				path = p
+			} else {
+				path = filepath.Join(cwd, ".gotodo.json")
+			}
+		}
 		s := store.NewJSONFileStore(path)
 		if err := s.Load(); err != nil {
 			fmt.Fprintln(os.Stderr, "no todo file found at", path)
@@ -145,7 +187,17 @@ func main() {
 		}
 		target := rmCmd.Arg(0)
 		cwd, _ := os.Getwd()
-		path := filepath.Join(cwd, ".gotodo.json")
+		var path string
+		if *rmFile != "" {
+			path = *rmFile
+		} else {
+			// try discovery
+			if p, err := discover.FindNearestTodoFile(cwd); err == nil && p != "" {
+				path = p
+			} else {
+				path = filepath.Join(cwd, ".gotodo.json")
+			}
+		}
 		s := store.NewJSONFileStore(path)
 		if err := s.Load(); err != nil {
 			fmt.Fprintln(os.Stderr, "no todo file found at", path)
