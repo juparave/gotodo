@@ -3,37 +3,65 @@ package discover
 import (
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
-func TestFindNearestTodoFile(t *testing.T) {
-	dir, err := ioutil.TempDir("", "gotodo-test")
+func TestGetTodoFilePath(t *testing.T) {
+	// Test in a Git repo
+	dir, err := ioutil.TempDir("", "gotodo-git-test")
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer os.RemoveAll(dir)
 
-	// create nested dirs
-	nested := filepath.Join(dir, "a", "b", "c")
-	if err := os.MkdirAll(nested, 0755); err != nil {
+	// Initialize a Git repo
+	if err := os.Chdir(dir); err != nil {
+		t.Fatal(err)
+	}
+	if err := exec.Command("git", "init").Run(); err != nil {
+		t.Fatal(err)
+	}
+	if err := exec.Command("git", "config", "user.email", "test@example.com").Run(); err != nil {
+		t.Fatal(err)
+	}
+	if err := exec.Command("git", "config", "user.name", "Test User").Run(); err != nil {
 		t.Fatal(err)
 	}
 
-	// place .gotodo.json in 'a'
-	marker := filepath.Join(dir, "a", ".gotodo.json")
-	if err := ioutil.WriteFile(marker, []byte("{}"), 0644); err != nil {
+	// Create a subdirectory
+	subdir := filepath.Join(dir, "subdir")
+	if err := os.Mkdir(subdir, 0755); err != nil {
 		t.Fatal(err)
 	}
 
-	found, err := FindNearestTodoFile(nested)
+	// Get the actual git root
+	cmd := exec.Command("git", "rev-parse", "--show-toplevel")
+	cmd.Dir = subdir
+	gitOutput, err := cmd.Output()
 	if err != nil {
 		t.Fatal(err)
 	}
-	if found == "" {
-		t.Fatalf("expected to find .gotodo.json, got none")
+	gitRoot := strings.TrimSpace(string(gitOutput))
+
+	path := GetTodoFilePath(subdir)
+	expected := filepath.Join(gitRoot, ".gotodo.json")
+	if path != expected {
+		t.Fatalf("expected %s, got %s", expected, path)
 	}
-	if filepath.Base(found) != ".gotodo.json" {
-		t.Fatalf("unexpected file found: %s", found)
+
+	// Test not in Git repo
+	nonGitDir, err := ioutil.TempDir("", "gotodo-nongit-test")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.RemoveAll(nonGitDir)
+
+	path2 := GetTodoFilePath(nonGitDir)
+	expected2 := filepath.Join(nonGitDir, ".gotodo.json")
+	if path2 != expected2 {
+		t.Fatalf("expected %s, got %s", expected2, path2)
 	}
 }

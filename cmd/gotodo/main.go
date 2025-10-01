@@ -4,7 +4,6 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"path/filepath"
 	"strconv"
 
 	"github.com/juparave/gotodo/internal/discover"
@@ -36,29 +35,17 @@ func main() {
 	case "init":
 		initCmd.Parse(os.Args[2:])
 		cwd, _ := os.Getwd()
-		currentPath := filepath.Join(cwd, ".gotodo.json")
-		if _, err := os.Stat(currentPath); err == nil {
-			fmt.Fprintln(os.Stderr, "todo file already exists at", currentPath)
+		path := discover.GetTodoFilePath(cwd)
+		if _, err := os.Stat(path); err == nil {
+			fmt.Fprintln(os.Stderr, "todo file already exists at", path)
 			os.Exit(1)
 		}
-		// discover parent
-		parentPath, _ := discover.FindNearestTodoFile(filepath.Dir(cwd))
-		if parentPath != "" {
-			fmt.Printf("Found todo list in %s. Use that list? (y/N): ", filepath.Dir(parentPath))
-			var ans string
-			fmt.Scanln(&ans)
-			if ans == "y" || ans == "Y" {
-				fmt.Println("Using existing list at", parentPath)
-				os.Exit(0)
-			}
-		}
-		// create new in current
-		s := store.NewJSONFileStore(currentPath)
+		s := store.NewJSONFileStore(path)
 		if err := s.Init(); err != nil {
 			fmt.Fprintln(os.Stderr, "init error:", err)
 			os.Exit(1)
 		}
-		fmt.Println("Initialized:", currentPath)
+		fmt.Println("Initialized:", path)
 
 	case "add":
 		addCmd.Parse(os.Args[2:])
@@ -75,21 +62,7 @@ func main() {
 			text += addCmd.Arg(i)
 		}
 		cwd, _ := os.Getwd()
-		var path string
-		currentPath := filepath.Join(cwd, ".gotodo.json")
-		parentPath, _ := discover.FindNearestTodoFile(filepath.Dir(cwd))
-		if parentPath != "" {
-			fmt.Printf("Found todo list in %s. Use that list? (y/N): ", filepath.Dir(parentPath))
-			var ans string
-			fmt.Scanln(&ans)
-			if ans == "y" || ans == "Y" {
-				path = parentPath
-			} else {
-				path = currentPath
-			}
-		} else {
-			path = currentPath
-		}
+		path := discover.GetTodoFilePath(cwd)
 		s := store.NewJSONFileStore(path)
 		if err := s.Load(); err != nil {
 			// try init
@@ -113,12 +86,7 @@ func main() {
 		if *listFile != "" {
 			path = *listFile
 		} else {
-			// try discovery
-			if p, err := discover.FindNearestTodoFile(cwd); err == nil && p != "" {
-				path = p
-			} else {
-				path = filepath.Join(cwd, ".gotodo.json")
-			}
+			path = discover.GetTodoFilePath(cwd)
 		}
 		s := store.NewJSONFileStore(path)
 		if err := s.Load(); err != nil {
@@ -140,12 +108,7 @@ func main() {
 		if *doneFile != "" {
 			path = *doneFile
 		} else {
-			// try discovery
-			if p, err := discover.FindNearestTodoFile(cwd); err == nil && p != "" {
-				path = p
-			} else {
-				path = filepath.Join(cwd, ".gotodo.json")
-			}
+			path = discover.GetTodoFilePath(cwd)
 		}
 		s := store.NewJSONFileStore(path)
 		if err := s.Load(); err != nil {
@@ -191,12 +154,7 @@ func main() {
 		if *rmFile != "" {
 			path = *rmFile
 		} else {
-			// try discovery
-			if p, err := discover.FindNearestTodoFile(cwd); err == nil && p != "" {
-				path = p
-			} else {
-				path = filepath.Join(cwd, ".gotodo.json")
-			}
+			path = discover.GetTodoFilePath(cwd)
 		}
 		s := store.NewJSONFileStore(path)
 		if err := s.Load(); err != nil {

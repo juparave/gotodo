@@ -86,5 +86,5 @@ func RenderHelp() {
 	fmt.Println("  " + todoStyle.Render("gotodo add \"Write README\"") + "  — add a todo")
 	fmt.Println("  " + todoStyle.Render("gotodo list --long") + "  — show todos with timestamps")
 	fmt.Println()
-	fmt.Println(desc.Render("Note: gotodo uses a .gotodo.json file in the current directory (or the nearest ancestor) so lists are project-specific."))
+	fmt.Println(desc.Render("Note: gotodo uses a .gotodo.json file at the Git repository root if inside a repo, otherwise in the current directory."))
 }

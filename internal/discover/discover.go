@@ -1,29 +1,23 @@
 package discover
 
 import (
-	"os"
+	"os/exec"
 	"path/filepath"
+	"strings"
 )
 
-// FindNearestTodoFile walks up from startDir to the filesystem root looking for
-// a ".gotodo.json" file. If found, it returns the absolute path. If not
-// found, it returns an empty string and nil error.
-func FindNearestTodoFile(startDir string) (string, error) {
-	dir := startDir
-	for {
-		candidate := filepath.Join(dir, ".gotodo.json")
-		if _, err := os.Stat(candidate); err == nil {
-			abs, err := filepath.Abs(candidate)
-			if err != nil {
-				return candidate, nil
-			}
-			return abs, nil
-		}
-		parent := filepath.Dir(dir)
-		if parent == dir {
-			// reached root
-			return "", nil
-		}
-		dir = parent
+// GetTodoFilePath returns the path to .gotodo.json based on Git repo root or current dir.
+// If inside a Git repo, returns .gotodo.json at the repo root.
+// Otherwise, returns .gotodo.json in the current directory.
+func GetTodoFilePath(cwd string) string {
+	// Try to get Git root
+	cmd := exec.Command("git", "rev-parse", "--show-toplevel")
+	cmd.Dir = cwd
+	output, err := cmd.Output()
+	if err == nil {
+		gitRoot := strings.TrimSpace(string(output))
+		return filepath.Join(gitRoot, ".gotodo.json")
 	}
+	// Not in Git repo, use current dir
+	return filepath.Join(cwd, ".gotodo.json")
 }
