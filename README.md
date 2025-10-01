@@ -1,9 +1,9 @@
 # gotodo
 
 [![Go Version](https://img.shields.io/badge/Go-1.20+-00ADD8?style=flat&logo=go)](https://golang.org/)
+[![Version](https://img.shields.io/badge/Version-0.0.1-blue.svg)](https://github.com/juparave/gotodo/releases/tag/v0.0.1)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Go Report Card](https://goreportcard.com/badge/github.com/juparave/gotodo)](https://goreportcard.com/report/github.com/juparave/gotodo)
-[![Build Status](https://github.com/juparave/gotodo/workflows/CI/badge.svg)](https://github.com/juparave/gotodo/actions)
 
 A simple, filesystem-aware todo CLI tool written in Go. Manage your todos with colors, Git repository integration, and per-project lists.
 
@@ -50,10 +50,16 @@ go install ./cmd/gotodo
 
 This installs `gotodo` to your `$GOBIN` or `$GOPATH/bin` directory.
 
-### Install with go install
+#### Install Latest Release
 
 ```bash
 go install github.com/juparave/gotodo/cmd/gotodo@latest
+```
+
+#### Install Specific Version
+
+```bash
+go install github.com/juparave/gotodo/cmd/gotodo@v0.0.1
 ```
 
 ### Manual build
