@@ -27,6 +27,13 @@ func main() {
 	rmFile := rmCmd.String("file", "", "path to .gotodo.json (overrides discovery)")
 
 	if len(os.Args) < 2 {
+		cwd, _ := os.Getwd()
+		path := discover.GetTodoFilePath(cwd)
+		s := store.NewJSONFileStore(path)
+		if err := s.Load(); err == nil {
+			ui.RenderList(s.All(), *listDoneLimit, *listLong)
+			os.Exit(0)
+		}
 		ui.RenderHelp()
 		os.Exit(0)
 	}

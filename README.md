@@ -1,7 +1,7 @@
 # gotodo
 
 [![Go Version](https://img.shields.io/badge/Go-1.20+-00ADD8?style=flat&logo=go)](https://golang.org/)
-[![Version](https://img.shields.io/badge/Version-0.0.1-blue.svg)](https://github.com/juparave/gotodo/releases/tag/v0.0.1)
+[![Version](https://img.shields.io/badge/Version-0.0.2-blue.svg)](https://github.com/juparave/gotodo/releases/tag/v0.0.2)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Go Report Card](https://goreportcard.com/badge/github.com/juparave/gotodo)](https://goreportcard.com/report/github.com/juparave/gotodo)
 
@@ -59,7 +59,7 @@ go install github.com/juparave/gotodo/cmd/gotodo@latest
 #### Install Specific Version
 
 ```bash
-go install github.com/juparave/gotodo/cmd/gotodo@v0.0.1
+go install github.com/juparave/gotodo/cmd/gotodo@v0.0.2
 ```
 
 ### Manual build
