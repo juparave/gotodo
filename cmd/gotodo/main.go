@@ -12,7 +12,17 @@ import (
 	"github.com/juparave/gotodo/internal/ui"
 )
 
+const version = "0.0.2"
+
 func main() {
+	// Check for version flag early
+	for _, arg := range os.Args[1:] {
+		if arg == "--version" || arg == "-v" {
+			fmt.Println("gotodo version", version)
+			os.Exit(0)
+		}
+	}
+
 	addCmd := flag.NewFlagSet("add", flag.ExitOnError)
 	listCmd := flag.NewFlagSet("list", flag.ExitOnError)
 	listDoneLimit := listCmd.Int("done-limit", 3, "number of done items to show")
